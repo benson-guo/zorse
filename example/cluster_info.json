@@ -1,0 +1,110 @@
+{
+    "machines": [
+        {
+            "machine": "paper103",
+            "num_gpus": 4,
+            "gpus": [
+                {
+                    "index": 0,
+                    "name": "l4",
+                    "memory_total_mib": 23034,
+                    "id": "gpu_0",
+                    "machine": "paper103",
+                    "global_rank": 0
+                },
+                {
+                    "index": 1,
+                    "name": "l4",
+                    "memory_total_mib": 23034,
+                    "id": "gpu_1",
+                    "machine": "paper103",
+                    "global_rank": 1
+                },
+                {
+                    "index": 2,
+                    "name": "a6000",
+                    "memory_total_mib": 49140,
+                    "id": "gpu_2",
+                    "machine": "paper103",
+                    "global_rank": 2
+                },
+                {
+                    "index": 3,
+                    "name": "p40",
+                    "memory_total_mib": 23040,
+                    "id": "gpu_3",
+                    "machine": "paper103",
+                    "global_rank": 3
+                }
+            ],
+            "machine_index": 0
+        }
+    ],
+    "total_gpus": 4,
+    "gpu_list": [
+        {
+            "index": 0,
+            "name": "l4",
+            "memory_total_mib": 23034,
+            "id": "gpu_0",
+            "machine": "paper103",
+            "global_rank": 0
+        },
+        {
+            "index": 1,
+            "name": "l4",
+            "memory_total_mib": 23034,
+            "id": "gpu_1",
+            "machine": "paper103",
+            "global_rank": 1
+        },
+        {
+            "index": 2,
+            "name": "a6000",
+            "memory_total_mib": 49140,
+            "id": "gpu_2",
+            "machine": "paper103",
+            "global_rank": 2
+        },
+        {
+            "index": 3,
+            "name": "p40",
+            "memory_total_mib": 23040,
+            "id": "gpu_3",
+            "machine": "paper103",
+            "global_rank": 3
+        }
+    ],
+    "global_rank_map": {
+        "0": {
+            "machine": "paper103",
+            "local_rank": 0,
+            "machine_index": 0
+        },
+        "1": {
+            "machine": "paper103",
+            "local_rank": 1,
+            "machine_index": 0
+        },
+        "2": {
+            "machine": "paper103",
+            "local_rank": 2,
+            "machine_index": 0
+        },
+        "3": {
+            "machine": "paper103",
+            "local_rank": 3,
+            "machine_index": 0
+        }
+    },
+    "bandwidth": {
+        "internode_bandwidth": {},
+        "intranode_bandwidth": {
+            "0": 11.08
+        },
+        "internode_latency": {},
+        "intranode_latency": {
+            "0": 0.004
+        }
+    }
+}

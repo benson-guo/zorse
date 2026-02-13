@@ -1,0 +1,128 @@
+{
+    "deepspeedgpt_test": {
+        "hidden_size": 512,
+        "num_layers": 12,
+        "parameters_per_layer": 3152384,
+        "total_parameters": 89209856
+    },
+    "deepspeedgpt_1.3b": {
+        "hidden_size": 2048,
+        "num_layers": 24,
+        "parameters_per_layer": 50358272,
+        "total_parameters": 1414123520
+    },
+    "deepspeedgpt_2.7b": {
+        "hidden_size": 2560,
+        "num_layers": 32,
+        "parameters_per_layer": 78676480,
+        "total_parameters": 2774553600
+    },
+    "deepspeedgpt_6.7b": {
+        "hidden_size": 4096,
+        "num_layers": 32,
+        "parameters_per_layer": 201379840,
+        "total_parameters": 6855204864
+    },
+    "deepspeedgpt_175b": {
+        "hidden_size": 12288,
+        "num_layers": 96,
+        "parameters_per_layer": 1812099072,
+        "total_parameters": 175194660864
+    },
+    "deepspeedllamav2_tiny": {
+        "hidden_size": 2048,
+        "num_layers": 22,
+        "parameters_per_layer": 51384320,
+        "total_parameters": 1331783680
+    },
+    "deepspeedllamav2_3b": {
+        "hidden_size": 3200,
+        "num_layers": 26,
+        "parameters_per_layer": 123910400,
+        "total_parameters": 3536246400
+    },
+    "deepspeedllamav2_7b": {
+        "hidden_size": 4096,
+        "num_layers": 32,
+        "parameters_per_layer": 202383360,
+        "total_parameters": 6878924800
+    },
+    "deepspeedllamav2_13b": {
+        "hidden_size": 5120,
+        "num_layers": 40,
+        "parameters_per_layer": 317204480,
+        "total_parameters": 13191500800
+    },
+    "deepspeedvit_default": {
+        "hidden_size": 768,
+        "num_layers": 12,
+        "parameters_per_layer": 7087872,
+        "total_parameters": 85806346
+    },
+    "deepspeedvit_g_small": {
+        "hidden_size": 1664,
+        "num_layers": 6,
+        "parameters_per_layer": 38361728,
+        "total_parameters": 231799434
+    },
+    "deepspeedvit_g": {
+        "hidden_size": 1664,
+        "num_layers": 48,
+        "parameters_per_layer": 38361728,
+        "total_parameters": 1842992010
+    },
+    "deepspeedvit_e": {
+        "hidden_size": 1792,
+        "num_layers": 56,
+        "parameters_per_layer": 67926784,
+        "total_parameters": 3805654282
+    },
+    "deepspeedbert_large": {
+        "hidden_size": 1024,
+        "num_layers": 24,
+        "parameters_per_layer": 12596224,
+        "total_parameters": 406174720
+    },
+    "deepspeedbert_xlarge": {
+        "hidden_size": 1536,
+        "num_layers": 36,
+        "parameters_per_layer": 28331520,
+        "total_parameters": 1176494592
+    },
+    "deepspeedllama_tiny": {
+        "hidden_size": 2048,
+        "num_layers": 22,
+        "parameters_per_layer": 51384320,
+        "total_parameters": 1331783680
+    },
+    "deepspeedllama_3b": {
+        "hidden_size": 3200,
+        "num_layers": 26,
+        "parameters_per_layer": 123910400,
+        "total_parameters": 3536246400
+    },
+    "deepspeedllama_7b": {
+        "hidden_size": 4096,
+        "num_layers": 32,
+        "parameters_per_layer": 202383360,
+        "total_parameters": 6878924800
+    },
+    "deepspeedllama_13b": {
+        "hidden_size": 5120,
+        "num_layers": 40,
+        "parameters_per_layer": 317204480,
+        "total_parameters": 13191500800
+    },
+    "deepspeedllama_33b": {
+        "hidden_size": 6656,
+        "num_layers": 60,
+        "parameters_per_layer": 535049216,
+        "total_parameters": 32757271040
+    },
+    "deepspeedllama_65b": {
+        "hidden_size": 8192,
+        "num_layers": 80,
+        "parameters_per_layer": 809517056,
+        "total_parameters": 65566679040
+    }
+}

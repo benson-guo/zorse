@@ -1,0 +1,40 @@
+{
+    "model_name": "deepspeedllama_tiny",
+    "global_batch_size": 128,
+    "microbatch_size": 2,
+    "sequence_length": 512,
+    "vocab_size": 49152,
+    "fused_optimizer": true,
+    "interleave_degree": 1,
+    "latency": 7721.375000533334,
+    "autocast_dtype": "float16",
+    "reduce_dtype": "float32",
+    "pipeline_config": [
+        {
+            "gpu_ranks": [
+                0,
+                3,
+                2,
+                1
+            ],
+            "num_microbatches_per_rank": [
+                18,
+                1,
+                28,
+                17
+            ],
+            "layer_partition": [
+                0,
+                22
+            ],
+            "zero_config": [
+                [
+                    0,
+                    3,
+                    2,
+                    1
+                ]
+            ]
+        }
+    ]
+}

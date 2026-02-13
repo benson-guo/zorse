@@ -1,0 +1,21 @@
+{
+  "group_id": "0",
+  "model_name": "deepspeedllama_3b",
+  "num_params": 123910400,
+  "message_size_mb": 472.6806640625,
+  "num_gpus": 4,
+  "allgather": {
+    "avg_time": 90.100556949983,
+    "min_time": 81.18588200159138,
+    "max_time": 91.71034400060307,
+    "std_dev": 2.5537221730513093,
+    "bandwidth": 5372.0533633182085
+  },
+  "reducescatter": {
+    "avg_time": 91.85834329982754,
+    "min_time": 85.0622360012494,
+    "max_time": 93.49802400174667,
+    "std_dev": 2.816218030051731,
+    "bandwidth": 5269.254621979545
+  }
+}
