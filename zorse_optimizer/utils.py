@@ -4,8 +4,8 @@ import subprocess
 import tempfile
 import time
 from typing import List, Dict
-from grolar_optimizer.cluster import ModelConfig
-from grolar_optimizer.constants import GPU_MEMORY_STATS
+from zorse_optimizer.cluster import ModelConfig
+from zorse_optimizer.constants import GPU_MEMORY_STATS
 
 
 def validate_memory_for_stage_config(
@@ -122,7 +122,7 @@ def profile_agrs_gpu_group(
     model_name,
     autocast_dtype,
     reduce_dtype,
-    conda_env="grolar",
+    conda_env="zorse",
     repo_path="~/fall2023/groler",
     num_trials=5,
     num_warmup=5,

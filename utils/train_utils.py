@@ -446,7 +446,7 @@ def compute_mfu2(
     return training_tflops, mfu_w_attn
 
 
-def compute_mfu_per_gpu_grolar(
+def compute_mfu_per_gpu_zorse(
     model_name,
     avg_iteration_time,
     dtype,
@@ -654,7 +654,7 @@ def print_metrics(
     # Gather GPU names for MFU calculation
     gpu_names = gather_gpu_names(gloo_pg)
     if pipeline_stages is not None:
-        compute_mfu_per_gpu_grolar(
+        compute_mfu_per_gpu_zorse(
             args.model_name,
             avg_iteration_time,
             get_dtype_str(args.autocast_dtype),

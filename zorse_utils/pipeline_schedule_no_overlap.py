@@ -10,10 +10,10 @@ from typing import List, Optional
 import torch
 from torch.distributed.fsdp._runtime_utils import _post_backward_final_callback
 
-from grolar_utils.pipeline import PipelineStage
-from grolar_utils.pipeline_config import PipelineConfig
+from zorse_utils.pipeline import PipelineStage
+from zorse_utils.pipeline_config import PipelineConfig
 from utils.comm import get_global_rank
-from grolar_utils.pipeline_schedule_v2 import StageState, PipelineScheduleGpipe
+from zorse_utils.pipeline_schedule_v2 import StageState, PipelineScheduleGpipe
 
 
 class PipelineScheduleGpipeSynchronized(PipelineScheduleGpipe):

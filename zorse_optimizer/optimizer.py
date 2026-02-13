@@ -4,12 +4,12 @@ from dataclasses import dataclass
 import json
 from typing import List, Dict, Tuple, Optional, NamedTuple
 
-from grolar_optimizer.cluster import (
+from zorse_optimizer.cluster import (
     ClusterConfigStage2 as ClusterConfig,
     ModelConfig,
     GPUGroupStage2 as GPUGroup,
 )
-from grolar_optimizer.utils import validate_memory_for_stage_config
+from zorse_optimizer.utils import validate_memory_for_stage_config
 
 
 @dataclass

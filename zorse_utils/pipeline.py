@@ -5,9 +5,9 @@ import torch
 import contextlib
 from torch import distributed as dist
 import torch.nn as nn
-from grolar_utils.gloo_pipeline_comm import PipelineCommunicatorGloo
-from grolar_utils.pipeline_config import PipelineConfig, PipelineStageConfig
-from grolar_utils.pipeline_comm import PipelineCommunicator, create_static_comm_plans
+from zorse_utils.gloo_pipeline_comm import PipelineCommunicatorGloo
+from zorse_utils.pipeline_config import PipelineConfig, PipelineStageConfig
+from zorse_utils.pipeline_comm import PipelineCommunicator, create_static_comm_plans
 from models.hub import (
     get_config_for_model,
     get_model_part_for_stage,
@@ -104,7 +104,7 @@ class PipelineStage(nn.Module):
 
     def wrap_model_zero(self, args):
         if is_leader():
-            print("Wrapping model grolar")
+            print("Wrapping model zorse")
         # count total parameters in model
         total_model_params = get_total_model_params(args.model_name, self.model)
 

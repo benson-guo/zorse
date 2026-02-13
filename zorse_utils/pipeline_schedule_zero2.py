@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
 """
 Standard pipeline parallelism with gradient accumulation except we use ZeRO2
-FlashFlex Version: Similar to pipeline_schedule_zero2.py but without offloading
 """
 
 # -*- coding: utf-8 -*-
-from typing import List, Optional
+from typing import List
 import torch
 from torch.distributed.fsdp._common_utils import _FSDPState
 from torch.distributed.fsdp._flat_param import HandleTrainingState
 import torch.distributed as dist
 
-from grolar_utils.pipeline import PipelineStage
-from grolar_utils.pipeline_config import PipelineConfig
-from grolar_utils.pipeline_schedule_v2 import StageState, PipelineScheduleGpipe
+from zorse_utils.pipeline import PipelineStage
+from zorse_utils.pipeline_config import PipelineConfig
+from zorse_utils.pipeline_schedule_v2 import StageState, PipelineScheduleGpipe
 from models.hub import get_all_layers
-from utils.comm import get_global_rank
 from utils.global_state import get_split_state, set_split_state
 from utils.patch import _unshard_patch
-from torch.distributed.fsdp._runtime_utils import _post_backward_final_callback
 
 
-class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
+class PipelineScheduleGpipeZeRO2(PipelineScheduleGpipe):
     def __init__(
         self,
         pipeline_stages: List[PipelineStage],
@@ -226,7 +223,9 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
         stage_id = stage.stage_id
         is_first_stage_of_group = state.prev_stage is None
         is_last_stage_of_group = state.next_stage is None
-        state.layer_inputs = [[] for _ in range(len(state.layers))]
+        interleave_stage_sync = self.pipeline_config.interleave_stage_sync
+        recv_batch_activations = interleave_stage_sync and stage.first_gpu_group()
+        send_batch_activations = interleave_stage_sync and stage.last_gpu_group()
 
         # Select communicator based on gloo_p2p and alternate_nccl_gloo flags
         recv_communicator = (
@@ -243,6 +242,17 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
                 stage_recv_batch_gloo = False
             if not stage.is_last_stage() and stage_size == stage.next_stage_size():
                 send_communicator = stage.communicator
+        if send_batch_activations:
+            # allocate cpu buffers for storing outputs
+            buffer_shape = state.gpu_activation_buffer.shape
+            cpu_output_buffers = [
+                torch.empty(
+                    buffer_shape,
+                    pin_memory=True,
+                    dtype=self.pipeline_config.autocast_dtype,
+                )
+                for _ in range(state.num_microbatches)
+            ]
 
         if is_first_stage_of_group:
             self.prefetch_stage_layers(stage, reverse_stages=False)
@@ -251,10 +261,21 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
 
         if not stage.is_first_stage():
             # allocate cpu buffers for storing inputs
+            buffer_shape = state.gpu_activation_buffer.shape
             for mb_idx in range(state.num_microbatches):
-                state.input_chunks[mb_idx] = None
+                state.input_chunks[mb_idx] = torch.empty(
+                    buffer_shape,
+                    pin_memory=True,
+                    dtype=self.pipeline_config.autocast_dtype,
+                )
 
-            if stage_recv_batch_gloo:
+            if recv_batch_activations:
+                for mb_idx in range(state.num_microbatches):
+                    layer_input = self.recv_forward(
+                        recv_communicator, state, stage_id, mb_idx
+                    )
+                    self.store_to_cpu_buffer(layer_input, state.input_chunks[mb_idx])
+            elif stage_recv_batch_gloo:
                 recv_works = self.recv_batch_forwards(
                     recv_communicator, state, stage_id
                 )
@@ -274,27 +295,32 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
 
                 if is_first_layer:
                     if not stage.is_first_stage():
-                        if stage_recv_batch_gloo:
-                            recv_works[mb_idx].wait()
-                            layer_input = recv_works[mb_idx].result()[0]
-                        elif mb_idx == 0:
-                            layer_input = self.recv_forward(
-                                recv_communicator, state, stage_id, mb_idx
+                        if recv_batch_activations:
+                            layer_input = self.load_from_cpu_buffer(
+                                state.gpu_activation_buffer, state.input_chunks[mb_idx]
                             )
+                            layer_input.requires_grad = True
+                            self.compute_stream.wait_stream(self.mem_copy_stream)
                         else:
-                            layer_input = self.wait_irecv_forward(
-                                next_mb_input_recv,
-                                recv_communicator,
-                                state,
-                                stage_id,
-                                mb_idx,
-                            )
-                        state.input_chunks[mb_idx] = layer_input
+                            if stage_recv_batch_gloo:
+                                recv_works[mb_idx].wait()
+                                layer_input = recv_works[mb_idx].result()[0]
+                            elif mb_idx == 0:
+                                layer_input = self.recv_forward(
+                                    recv_communicator, state, stage_id, mb_idx
+                                )
+                            else:
+                                layer_input = self.wait_irecv_forward(
+                                    next_mb_input_recv,
+                                    recv_communicator,
+                                    state,
+                                    stage_id,
+                                    mb_idx,
+                                )
                     else:
                         layer_input = state.input_chunks[mb_idx]
                 else:
                     layer_input = output.detach()
-                    state.layer_inputs[li].append(layer_input)
 
                 output = self._forward_layer(
                     layer,
@@ -306,6 +332,7 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
                 if (
                     is_first_layer
                     and not stage.is_first_stage()
+                    and not recv_batch_activations
                     and not stage_recv_batch_gloo
                     and mb_idx < state.num_microbatches - 1
                 ):
@@ -326,14 +353,38 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
                 )
 
                 if not is_last_layer:
-                    pass
+                    buffer_idx = li * state.num_microbatches + mb_idx
+                    self.store_to_cpu_buffer(
+                        output, state.cpu_buffers[buffer_idx], sync_compute_stream=True
+                    )
                 else:
                     if not stage.is_last_stage():
-                        send_communicator.wait_for_stream()
-                        send_work = self.send_forward(
-                            send_communicator, state, stage_id, mb_idx, output
-                        )
-                        sends_to_wait.append(send_work)
+                        if send_batch_activations:
+                            # Store the final output for this microbatch
+                            self.store_to_cpu_buffer(
+                                output,
+                                cpu_output_buffers[mb_idx],
+                                sync_compute_stream=True,
+                            )
+                        else:
+                            send_communicator.wait_for_stream()
+                            send_work = self.send_forward(
+                                send_communicator, state, stage_id, mb_idx, output
+                            )
+                            sends_to_wait.append(send_work)
+
+        if not stage.is_last_stage() and send_batch_activations:
+            for mb_idx in range(state.num_microbatches):
+                output = self.load_from_cpu_buffer(
+                    state.gpu_activation_buffer,
+                    cpu_output_buffers[mb_idx],
+                    sync_compute_stream=True,
+                )
+                send_communicator.wait_for_stream(self.mem_copy_stream)
+                send_work = self.send_forward(
+                    send_communicator, state, stage_id, mb_idx, output
+                )
+                sends_to_wait.append(send_work)
 
         return sends_to_wait
 
@@ -341,6 +392,9 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
         sends_to_wait = []
         stage = state.stage
         stage_id = stage.stage_id
+        interleave_stage_sync = self.pipeline_config.interleave_stage_sync
+        recv_batch_grads = interleave_stage_sync and stage.last_gpu_group()
+        send_batch_grads = interleave_stage_sync and stage.first_gpu_group()
 
         # Select communicator based on gloo_p2p and alternate_nccl_gloo flags
         recv_communicator = (
@@ -360,7 +414,11 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
 
         if state.prev_stage is not None:
             self.prefetch_stage_layers(state.prev_stage, reverse_stages=True)
-        if not stage.is_last_stage() and stage_recv_batch_gloo:
+        if not stage.is_last_stage() and recv_batch_grads:
+            for mb_idx in range(state.num_microbatches - 1, -1, -1):
+                grad = self.recv_backward(recv_communicator, state, stage_id, mb_idx)
+                self.store_to_cpu_buffer(grad, state.cpu_grad_buffers[mb_idx])
+        elif not stage.is_last_stage() and stage_recv_batch_gloo:
             recv_works = self.recv_batch_backwards(recv_communicator, state, stage_id)
 
         next_mb_grad_recv = None
@@ -380,31 +438,42 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
 
                 if is_last_layer:
                     if not stage.is_last_stage():
-                        if stage_recv_batch_gloo:
-                            recv_works[mb_idx].wait()
-                            grad = recv_works[mb_idx].result()[0]
-                        elif mb_idx == state.num_microbatches - 1:
-                            grad = self.recv_backward(
-                                recv_communicator, state, stage_id, mb_idx
+                        if recv_batch_grads:
+                            grad = self.load_from_cpu_buffer(
+                                state.gpu_grad_buffer, state.cpu_grad_buffers[mb_idx]
                             )
+                            self.compute_stream.wait_stream(self.mem_copy_stream)
                         else:
-                            # set to grad received from previous microbatch
-                            grad = self.wait_irecv_backward(
-                                next_mb_grad_recv,
-                                recv_communicator,
-                                state,
-                                stage_id,
-                                mb_idx,
-                            )
+                            if stage_recv_batch_gloo:
+                                recv_works[mb_idx].wait()
+                                grad = recv_works[mb_idx].result()[0]
+                            elif mb_idx == state.num_microbatches - 1:
+                                grad = self.recv_backward(
+                                    recv_communicator, state, stage_id, mb_idx
+                                )
+                            else:
+                                # set to grad received from previous microbatch
+                                grad = self.wait_irecv_backward(
+                                    next_mb_grad_recv,
+                                    recv_communicator,
+                                    state,
+                                    stage_id,
+                                    mb_idx,
+                                )
 
                 if is_first_layer:
                     if stage.is_first_stage():
                         layer_input = state.input_chunks[mb_idx]
                     else:
-                        layer_input = state.input_chunks[mb_idx]
+                        layer_input = self.load_from_cpu_buffer(
+                            state.gpu_activation_buffer, state.input_chunks[mb_idx]
+                        )
                         layer_input.requires_grad = True
                 else:
-                    layer_input = state.layer_inputs[li][mb_idx]
+                    buffer_idx = (li - 1) * state.num_microbatches + mb_idx
+                    layer_input = self.load_from_cpu_buffer(
+                        state.gpu_activation_buffer, state.cpu_buffers[buffer_idx]
+                    )
                     layer_input.requires_grad = True
                 self.compute_stream.wait_stream(self.mem_copy_stream)
 
@@ -426,6 +495,7 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
                 if (
                     is_last_layer
                     and not stage.is_last_stage()
+                    and not recv_batch_grads
                     and not stage_recv_batch_gloo
                     and mb_idx > 0
                 ):
@@ -449,58 +519,43 @@ class PipelineScheduleGpipeFlashFlex(PipelineScheduleGpipe):
                     )
                 elif not stage.is_first_stage():
                     grad = layer_input.grad.detach()
-                    self.pipeline_logger.debug(
-                        stage_id,
-                        mb_idx,
-                        " wait for stream",
-                    )
-                    send_communicator.wait_for_stream()
-                    self.pipeline_logger.debug(
-                        stage_id,
-                        mb_idx,
-                        " post wait for stream",
-                    )
-                    send_work = self.send_backward(
-                        send_communicator, state, stage_id, mb_idx, grad
-                    )
-                    sends_to_wait.append(send_work)
+                    if send_batch_grads:
+                        self.store_to_cpu_buffer(
+                            grad,
+                            state.cpu_grad_buffers[mb_idx],
+                            sync_compute_stream=True,
+                        )
+                    else:
+                        self.pipeline_logger.debug(
+                            stage_id,
+                            mb_idx,
+                            " wait for stream",
+                        )
+                        send_communicator.wait_for_stream()
+                        self.pipeline_logger.debug(
+                            stage_id,
+                            mb_idx,
+                            " post wait for stream",
+                        )
+                        send_work = self.send_backward(
+                            send_communicator, state, stage_id, mb_idx, grad
+                        )
+                        sends_to_wait.append(send_work)
+
+        if not stage.is_first_stage() and send_batch_grads:
+            for mb_idx in range(state.num_microbatches - 1, -1, -1):
+                grad = self.load_from_cpu_buffer(
+                    state.gpu_grad_buffer,
+                    state.cpu_grad_buffers[mb_idx],
+                    sync_compute_stream=True,
+                )
+                send_communicator.wait_for_stream(self.mem_copy_stream)
+                send_work = self.send_backward(
+                    send_communicator, state, stage_id, mb_idx, grad
+                )
+                sends_to_wait.append(send_work)
 
         return sends_to_wait
-
-    def step(
-        self,
-        step_idx: int,
-        input_chunks: Optional[List[torch.Tensor]] = None,
-        target_chunks: Optional[List[torch.Tensor]] = None,
-    ) -> Optional[torch.Tensor]:
-        self.pipeline_logger.set_step(step_idx)
-        global_rank = get_global_rank()
-        # iteration 1 onwards, set unshard patch
-        # TODO: copied from old, not 100% sure we need
-        if step_idx > 0:
-            for state in self.stage_states:
-                for layer in state.layers:
-                    layer._handle._needs_pre_forward_unshard = True
-
-        for stage_idx, state in enumerate(self.stage_states):
-            if input_chunks is not None and stage_idx == 0:
-                state.input_chunks = input_chunks
-            if target_chunks is not None:
-                state.target_chunks = target_chunks
-            sends = self._forward_stage(state, global_rank=global_rank)
-            for work in sends:
-                work.wait()
-        for _, state in enumerate(reversed(self.stage_states)):
-            sends = self._backward_stage(state, global_rank=global_rank)
-            for work in sends:
-                work.wait()
-
-        # manually call the final callback for each fsdp module after entire backwards completes
-        # post_backward_final_callback needs to be called after all backwards are scheduled
-        # since it synchronizes with post backward stream
-        for state in reversed(self.stage_states):
-            for layer in state.layers:
-                _post_backward_final_callback(layer, None)
 
     def prefetch_stage_layers(self, stage: PipelineStage, reverse_stages=False):
         stage_layers = get_all_layers(stage.model)
@@ -529,8 +584,8 @@ def build_pipeline_schedule(
     pipeline_stages: List[PipelineStage],
     pipeline_config: PipelineConfig,
     gloo_p2p: bool,
-) -> PipelineScheduleGpipeFlashFlex:
-    return PipelineScheduleGpipeFlashFlex(pipeline_stages, pipeline_config, gloo_p2p)
+) -> PipelineScheduleGpipeZeRO2:
+    return PipelineScheduleGpipeZeRO2(pipeline_stages, pipeline_config, gloo_p2p)
 
 
 # Wrapper around the logic in torch.distributed.fsdp._runtime_utils._prefetch_handle

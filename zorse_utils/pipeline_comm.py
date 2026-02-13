@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, Optional, List
 import torch.distributed as dist
 import torch
-from grolar_utils.pipeline_config import PipelineConfig
+from zorse_utils.pipeline_config import PipelineConfig
 from utils.optimizer_utils import load_model_latencies_per_gpu
 from utils.comm import (
     get_global_rank,

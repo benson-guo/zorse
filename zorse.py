@@ -6,24 +6,24 @@ import os
 from typing import Any, Dict, List
 import torch
 import torch.distributed as dist
-from grolar_utils.argparse import parse_args_grolar, override_args_with_config
-from grolar_utils.pipeline_config import parse_pipeline_config
-from grolar_utils.pipeline import PipelineStage, build_pipeline_stages
-from grolar_utils.pipeline_logger import init_pipeline_logger
-from grolar_utils.pipeline_schedule_v2 import (
+from zorse_utils.argparse import parse_args_zorse, override_args_with_config
+from zorse_utils.pipeline_config import parse_pipeline_config
+from zorse_utils.pipeline import PipelineStage, build_pipeline_stages
+from zorse_utils.pipeline_logger import init_pipeline_logger
+from zorse_utils.pipeline_schedule_v2 import (
     PipelineScheduleGpipe,
     build_pipeline_schedule,
 )
-from grolar_utils.pipeline_schedule_no_overlap import (
+from zorse_utils.pipeline_schedule_no_overlap import (
     build_pipeline_schedule as build_pipeline_schedule_sync,
 )
-from grolar_utils.pipeline_schedule_two_stage_sync import (
+from zorse_utils.pipeline_schedule_two_stage_sync import (
     build_pipeline_schedule as build_pipeline_schedule_two_stage_sync,
 )
-from grolar_utils.pipeline_schedule_zero2 import (
+from zorse_utils.pipeline_schedule_zero2 import (
     build_pipeline_schedule as build_pipeline_schedule_zero2,
 )
-from grolar_utils.pipeline_schedule_flashflex import (
+from zorse_utils.pipeline_schedule_flashflex import (
     build_pipeline_schedule as build_pipeline_schedule_flashflex,
 )
 from utils.global_state import configure_gradient_accumulation, set_split_state
@@ -210,10 +210,10 @@ def train(
 
 
 def main():
-    args = parse_args_grolar()
+    args = parse_args_zorse()
     override_args_with_config(args)
     print(f"Log level: {args.log_level}")
-    init_logger(name="grolar.py", log_level=args.log_level)
+    init_logger(name="zorse.py", log_level=args.log_level)
     world_size = dist_init()
     args.world_size = world_size
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -230,7 +230,7 @@ def main():
     pipeline_config = parse_pipeline_config(args.config_file)
     args.global_batch_size = pipeline_config.global_batch_size
 
-    init_pipeline_logger("./grolar_logs", log_level=args.log_level)
+    init_pipeline_logger("./zorse_logs", log_level=args.log_level)
 
     # build stages and schedule
     pipeline_stages = build_pipeline_stages(pipeline_config, gloo_pg=gloo_pg)

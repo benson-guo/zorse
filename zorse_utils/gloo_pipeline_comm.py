@@ -2,7 +2,7 @@
 from typing import Optional
 import torch
 from torch import distributed as dist
-from grolar_utils.pipeline_comm import StageCommPattern
+from zorse_utils.pipeline_comm import StageCommPattern
 
 
 class PipelineCommunicatorGloo:

@@ -34,7 +34,7 @@ def override_args_with_config(args):
             setattr(args, key, value)
 
 
-def parse_args_grolar():
+def parse_args_zorse():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--log_level",
@@ -200,7 +200,7 @@ def parse_args_grolar():
         help="GPUs used to calculate MFU",
     )
     parser.add_argument(
-        "--config_file", type=str, default="./grolar_configs/paper103_default.json"
+        "--config_file", type=str, default="./zorse_configs/paper103_default.json"
     )
     parser.add_argument("--sync_comm", action="store_true")
     parser.add_argument("--two_stage_sync", action="store_true")

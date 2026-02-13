@@ -3,8 +3,8 @@ from typing import List, Optional, Dict
 import torch
 import torch.distributed as dist
 from torch.distributed.fsdp._runtime_utils import _post_backward_final_callback
-from grolar_utils.pipeline_config import PipelineConfig
-from grolar_utils.pipeline import PipelineStage
+from zorse_utils.pipeline_config import PipelineConfig
+from zorse_utils.pipeline import PipelineStage
 from utils.comm import get_global_rank, get_local_rank
 from utils.logger import get_logger
 from models.hub import get_all_layers

@@ -14,15 +14,15 @@ from comm_model import (
     get_bandwidth_matrix,
     get_tensor_size_gb,
 )
-from grolar_optimizer.cluster import (
+from zorse_optimizer.cluster import (
     ClusterConfigStage2,
     GPUStage2,
     GPUGroupStage2,
     ModelConfig,
 )
-from grolar_optimizer.optimizer import PipelineOptimizer
-from grolar_optimizer.profiler import profile_agrs_partition
-from grolar_optimizer.visualize import visualize_graph
+from zorse_optimizer.optimizer import PipelineOptimizer
+from zorse_optimizer.profiler import profile_agrs_partition
+from zorse_optimizer.visualize import visualize_graph
 from models.hub import get_model_stats
 from utils.comm import clean_gpu_name
 from utils.optimizer_utils import load_model_compute_latencies_per_gpu

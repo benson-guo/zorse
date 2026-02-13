@@ -6,9 +6,9 @@ from torch.distributed.fsdp._runtime_utils import _post_backward_final_callback
 from dataclasses import dataclass
 from torch import nn
 
-from grolar_utils.pipeline import PipelineStage
-from grolar_utils.pipeline_config import PipelineConfig
-from grolar_utils.pipeline_logger import get_pipeline_logger
+from zorse_utils.pipeline import PipelineStage
+from zorse_utils.pipeline_config import PipelineConfig
+from zorse_utils.pipeline_logger import get_pipeline_logger
 from models.hub import get_all_layers
 from utils.comm import get_global_rank, get_local_rank
 

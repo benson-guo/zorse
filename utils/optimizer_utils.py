@@ -2,7 +2,7 @@
 from typing import Dict
 import json
 
-from grolar_optimizer.optimizer import ModelLatencies
+from zorse_optimizer.optimizer import ModelLatencies
 
 
 # returns 1 layer forward + backward latencies for given model, dtype, batch_sze
