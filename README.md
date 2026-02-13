@@ -1,4 +1,4 @@
-# Grolar
+# Zorse
 
 ## Setup
 The setup script will create a conda environment and install Pytorch 2.5.1 as well as other libraries needed to run the code. Tested with CUDA 12.1, PyTorch 2.5.1.
