@@ -5,6 +5,10 @@ from typing import Dict
 import numpy as np
 import pymetis
 import time
+# This switches matplotlib to a non-interactive backend, 
+# so plt.show() becomes a no-op and won't open any windows.
+import matplotlib
+matplotlib.use('Agg')
 import networkx as nx
 from networkx.algorithms.connectivity import stoer_wagner
 from sklearn.cluster import SpectralClustering
