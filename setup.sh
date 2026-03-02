@@ -19,8 +19,8 @@ conda activate "$conda_env_name"  # Use "conda activate" on newer Conda versions
 
 # Install PyTorch (you can specify the version and CUDA support as needed)
 pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu121
-pip install transformers==4.46.2 matplotlib timer kneed scikit-learn pulp
-pip install flash-attn --no-build-isolation
+pip install transformers==4.46.2 matplotlib timer kneed scikit-learn pulp pymetis
+# pip install flash-attn --no-build-isolation
 # Old version (2.1)
 # pip install torch==2.1.2 torchvision==0.16.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu121
 # pip install transformers matplotlib timer kneed scikit-learn pulp
