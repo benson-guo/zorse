@@ -52,6 +52,8 @@ def get_gpu_name(local_rank=None):
         gpu_name = "p100"
     elif gpu_name == "v100-pcie-16gb":
         gpu_name = "v100-pciex16"
+    elif gpu_name == "v100-pcie-32gb":
+        gpu_name = "v100x32"
     elif gpu_name == "v100-sxm2-16gb":
         gpu_name = "v100x16"
     elif gpu_name == "v100-sxm2-32gb":
@@ -73,6 +75,8 @@ def clean_gpu_name(gpu_name):
         gpu_name = "p100"
     elif gpu_name == "v100-pcie-16gb":
         gpu_name = "v100-pciex16"
+    elif gpu_name == "v100-pcie-32gb":
+        gpu_name = "v100x32"
     elif gpu_name == "v100-sxm2-16gb":
         gpu_name = "v100x16"
     elif gpu_name == "v100-sxm2-32gb":
