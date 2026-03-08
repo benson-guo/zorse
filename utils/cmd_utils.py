@@ -169,11 +169,16 @@ def run_internode_bandwidth_test(
     dst_idx,
     src_machine_info,
     dst_machine_info,
-    conda_path,
-    conda_env,
-    repo_path,
-    nccl_socket_ifname,
-    ssh_key_path,
+    src_conda_path,
+    src_conda_env,
+    src_repo_path,
+    src_nccl_socket_ifname,
+    src_ssh_key_path,
+    dst_conda_path,
+    dst_conda_env,
+    dst_repo_path,
+    dst_nccl_socket_ifname,
+    dst_ssh_key_path,
     output_dir,
     ib_disable=False,
     parallel=1,
@@ -185,14 +190,14 @@ def run_internode_bandwidth_test(
 
     # Build the command for source machine (node_rank=0)
     src_cmd_parts = [
-        f"cd {repo_path}",
-        f"source {conda_path}",
-        f"conda activate {conda_env}",
+        f"cd {src_repo_path}",
+        f"source {src_conda_path}",
+        f"conda activate {src_conda_env}",
     ]
 
     src_dist_run_parts = []
-    if nccl_socket_ifname:
-        src_dist_run_parts.append(f"NCCL_SOCKET_IFNAME={nccl_socket_ifname}")
+    if src_nccl_socket_ifname:
+        src_dist_run_parts.append(f"NCCL_SOCKET_IFNAME={src_nccl_socket_ifname}")
     if ib_disable:
         src_dist_run_parts.append("NCCL_IB_DISABLE=1")
 
@@ -220,14 +225,14 @@ def run_internode_bandwidth_test(
 
     # Build command for destination machine (node_rank=1)
     dst_cmd_parts = [
-        f"cd {repo_path}",
-        f"source {conda_path}",
-        f"conda activate {conda_env}",
+        f"cd {dst_repo_path}",
+        f"source {dst_conda_path}",
+        f"conda activate {dst_conda_env}",
     ]
 
     dst_dist_run_parts = []
-    if nccl_socket_ifname:
-        dst_dist_run_parts.append(f"NCCL_SOCKET_IFNAME={nccl_socket_ifname}")
+    if dst_nccl_socket_ifname:
+        dst_dist_run_parts.append(f"NCCL_SOCKET_IFNAME={dst_nccl_socket_ifname}")
     if ib_disable:
         dst_dist_run_parts.append("NCCL_IB_DISABLE=1")
 
@@ -256,8 +261,8 @@ def run_internode_bandwidth_test(
     # Execute ssh commands
     print(f"Launching internode test on source machine {src_machine}...")
     src_ssh_cmd = ["ssh"]
-    if ssh_key_path:
-        src_ssh_cmd.extend(["-i", ssh_key_path])
+    if src_ssh_key_path:
+        src_ssh_cmd.extend(["-i", src_ssh_key_path])
     src_ssh_cmd.extend([src_machine, src_cmd_str])
 
     src_process = subprocess.Popen(
@@ -269,8 +274,8 @@ def run_internode_bandwidth_test(
 
     print(f"Launching internode test on destination machine {dst_machine}...")
     dst_ssh_cmd = ["ssh"]
-    if ssh_key_path:
-        dst_ssh_cmd.extend(["-i", ssh_key_path])
+    if dst_ssh_key_path:
+        dst_ssh_cmd.extend(["-i", dst_ssh_key_path])
     dst_ssh_cmd.extend([dst_machine, dst_cmd_str])
 
     dst_process = subprocess.Popen(

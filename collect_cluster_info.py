@@ -181,6 +181,12 @@ def run_bandwidth_test(
             src_nccl_socket_ifname = nccl_socket_ifnames.get(src_machine, "")
             src_ssh_key_path = ssh_key_paths.get(src_machine)
 
+            dst_conda_path = conda_paths[dst_machine]
+            dst_conda_env = conda_envs[dst_machine]
+            dst_repo_path = repo_paths[dst_machine]
+            dst_nccl_socket_ifname = nccl_socket_ifnames.get(dst_machine, "")
+            dst_ssh_key_path = ssh_key_paths.get(dst_machine)
+
             # Run the internode bandwidth test between these two machines
             src_stdout, src_stderr, dst_stdout, dst_stderr, src_rc, dst_rc = (
                 run_internode_bandwidth_test(
@@ -195,6 +201,11 @@ def run_bandwidth_test(
                     src_repo_path,
                     src_nccl_socket_ifname,
                     src_ssh_key_path,
+                    dst_conda_path,
+                    dst_conda_env,
+                    dst_repo_path,
+                    dst_nccl_socket_ifname,
+                    dst_ssh_key_path,
                     output_dir,
                     ib_disable,
                     parallel,
