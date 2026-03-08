@@ -210,11 +210,19 @@ def train(
 
 
 def main():
+    import sys
+    def _dbg(msg):
+        rank = int(os.environ.get("RANK", -1))
+        print(f"[DBG r{rank}] {msg}", flush=True)
+        sys.stdout.flush()
+
     args = parse_args_zorse()
     override_args_with_config(args)
     print(f"Log level: {args.log_level}")
     init_logger(name="zorse.py", log_level=args.log_level)
+    _dbg("before dist_init")
     world_size = dist_init()
+    _dbg("after dist_init")
     args.world_size = world_size
     local_rank = int(os.environ["LOCAL_RANK"])
     device = torch.device(f"cuda:{local_rank}")
@@ -222,20 +230,26 @@ def main():
     gloo_pg = None
     if args.gloo_p2p:
         all_ranks = list(range(world_size))
+        _dbg("before new_group(gloo)")
         gloo_pg = dist.new_group(
             ranks=all_ranks, backend="gloo", timeout=datetime.timedelta(seconds=300)
         )
+        _dbg("after new_group(gloo)")
         args.gloo_pg = gloo_pg
 
+    _dbg("before parse_pipeline_config")
     pipeline_config = parse_pipeline_config(args.config_file)
     args.global_batch_size = pipeline_config.global_batch_size
 
     init_pipeline_logger("./zorse_logs", log_level=args.log_level)
 
-    # build stages and schedule
+    _dbg("before build_pipeline_stages")
     pipeline_stages = build_pipeline_stages(pipeline_config, gloo_pg=gloo_pg)
-    for stage in pipeline_stages:
+    _dbg("after build_pipeline_stages")
+    for i, stage in enumerate(pipeline_stages):
+        _dbg(f"before wrap_model_zero stage {i}")
         stage.wrap_model_zero(args)
+        _dbg(f"after wrap_model_zero stage {i}")
 
     # TODO: deprecate sync_comm in future because it is inefficient
     # keeping for now to debug/run evaluations
