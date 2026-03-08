@@ -82,9 +82,9 @@ def run_intranode_bandwidth_test(
     ]
     dist_run_parts = []
 
-    # Add NCCL_SOCKET_IFNAME if specified
     if nccl_socket_ifname:
         dist_run_parts.append(f"NCCL_SOCKET_IFNAME={nccl_socket_ifname}")
+        dist_run_parts.append(f"GLOO_SOCKET_IFNAME={nccl_socket_ifname}")
 
     if ib_disable:
         dist_run_parts.append("NCCL_IB_DISABLE=1")
@@ -195,9 +195,14 @@ def run_internode_bandwidth_test(
         f"conda activate {src_conda_env}",
     ]
 
+    src_cmd_parts.extend([
+        "lsof -t -i :12346 > /dev/null 2>&1 && lsof -t -i :12346 | xargs kill -9 || true",
+    ])
+
     src_dist_run_parts = []
     if src_nccl_socket_ifname:
         src_dist_run_parts.append(f"NCCL_SOCKET_IFNAME={src_nccl_socket_ifname}")
+        src_dist_run_parts.append(f"GLOO_SOCKET_IFNAME={src_nccl_socket_ifname}")
     if ib_disable:
         src_dist_run_parts.append("NCCL_IB_DISABLE=1")
 
@@ -230,9 +235,14 @@ def run_internode_bandwidth_test(
         f"conda activate {dst_conda_env}",
     ]
 
+    dst_cmd_parts.extend([
+        "lsof -t -i :12346 > /dev/null 2>&1 && lsof -t -i :12346 | xargs kill -9 || true",
+    ])
+
     dst_dist_run_parts = []
     if dst_nccl_socket_ifname:
         dst_dist_run_parts.append(f"NCCL_SOCKET_IFNAME={dst_nccl_socket_ifname}")
+        dst_dist_run_parts.append(f"GLOO_SOCKET_IFNAME={dst_nccl_socket_ifname}")
     if ib_disable:
         dst_dist_run_parts.append("NCCL_IB_DISABLE=1")
 
