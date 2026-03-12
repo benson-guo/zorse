@@ -12,13 +12,22 @@
             "author": [
                 {
                     "@id": "#author_0"
+                },
+                {
+                    "@id": "#author_1"
+                },
+                {
+                    "@id": "#author_2"
+                },
+                {
+                    "@id": "#author_3"
                 }
             ],
             "datePublished": "2026-03-12T06:19:38+00:00",
-            "description": "...",
-            "disambiguatingDescription": "Run Zorse distributed training on Chameleon Cloud V100 GPUs.",
+            "description": "Zorse is a system for efficient LLM training on heterogeneous GPU clusters. It uses Pipeline-Efficient ZeRO DP, a novel integration of pipeline parallelism and data parallelism that is both communication- and memory-efficient. Grolar includes a planner that automatically finds optimized training configurations from the vast search space on heterogeneous clusters, achieving up to 3x higher training throughput than state-of-the-art systems. This Trovi artifact demonstrates running Zorse on a Chameleon Cloud bare-metal V100 node, walking through profiling, planning, and training end-to-end.",
+            "disambiguatingDescription": "Heterogeneity-aware distributed LLM training on Cloud GPUs.",
             "keywords": "distributed-machine-learning",
-            "name": "Zorse: Heterogeneity-Aware Distributed Training"
+            "name": "Zorse: Efficient LLM Training on Heterogeneous GPU Clusters"
         },
         {
             "@id": "trovi.json",
@@ -33,9 +42,23 @@
         {
             "@id": "#author_0",
             "@type": "Person",
-            "affiliation": "Institution",
-            "email": "email",
-            "name": "Name"
+            "affiliation": "University of Waterloo",
+            "email": "rbguo@uwaterloo.ca",
+            "name": "Benson Guo"
+        },
+        {
+            "@id": "#author_1",
+            "@type": "Person",
+            "affiliation": "University of Waterloo",
+            "email": "u3anand@uwaterloo.ca",
+            "name": "Utkarsh Anand"
+        },
+        {
+            "@id": "#author_3",
+            "@type": "Person",
+            "affiliation": "University of Waterloo",
+            "email": "kdaudjee@uwaterloo.ca",
+            "name": "Khuzaima Daudjee"
         },
         {
             "@id": "#ChameleonJupyterLab",
