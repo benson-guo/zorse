@@ -23,7 +23,7 @@
             "datePublished": "2026-03-12T06:37:07+00:00",
             "description": "Zorse is a system for efficient LLM training on heterogeneous GPU clusters. It uses Pipeline-Efficient ZeRO DP, a novel integration of pipeline parallelism and data parallelism that is both communication- and memory-efficient. This Trovi artifact demonstrates running Zorse on a Chameleon Cloud bare-metal V100 node, walking through profiling, planning, and training end-to-end.",
             "disambiguatingDescription": "Heterogeneity-aware distributed LLM training on Chameleon Cloud GPUs.",
-            "keywords": "systems",
+            "keywords": "experiment,reproducible research",
             "name": "Zorse: Efficient LLM Training on Heterogeneous GPU Clusters"
         },
         {
