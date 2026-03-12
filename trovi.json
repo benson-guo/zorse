@@ -17,9 +17,6 @@
                     "@id": "#author_1"
                 },
                 {
-                    "@id": "#author_2"
-                },
-                {
                     "@id": "#author_3"
                 }
             ],
@@ -54,7 +51,7 @@
             "name": "Utkarsh Anand"
         },
         {
-            "@id": "#author_3",
+            "@id": "#author_2",
             "@type": "Person",
             "affiliation": "University of Waterloo",
             "email": "kdaudjee@uwaterloo.ca",
