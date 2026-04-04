@@ -64,4 +64,8 @@ Each step of the pipeline produces the following output:
 
 ## Chameleon Cloud Artifact
 
-A ready-to-run Trovi artifact is available for reproducing results on [Chameleon Cloud](https://www.chameleoncloud.org/). See [`chameleon.ipynb`](chameleon.ipynb) for the complete end-to-end walkthrough. The notebook was originally tested on 4x NVIDIA Tesla V100-PCIE-32GB.
+A ready-to-run Trovi artifact is available for reproducing results on Chameleon Cloud:
+
+**[Trovi Artifact](https://trovi.chameleoncloud.org/dashboard/artifacts/a93d14aa-4c2b-4748-9c5e-cbd28b663020)**
+
+See [`chameleon.ipynb`](chameleon.ipynb) for the complete end-to-end walkthrough. The notebook was originally tested on 4x NVIDIA Tesla V100-PCIE-32GB.
