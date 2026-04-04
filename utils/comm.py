@@ -64,15 +64,23 @@ def get_gpu_name(local_rank=None):
         gpu_name = "a100x40"
     elif gpu_name == "a100-sxm4-80gb":
         gpu_name = "a100x80"
-    # rename
-    elif gpu_name == "nvl":
-        gpu_name = "h100-nvl"
 
     return gpu_name
 
 
 def clean_gpu_name(gpu_name):
-    gpu_name = gpu_name.lower().split(" ")[-1]
+    gpu_name_lower = gpu_name.lower()
+
+    # H100 variants: the last-word heuristic loses "h100" for names like
+    # "NVIDIA H100 80GB HBM3", so match on the full string first.
+    if "h100" in gpu_name_lower:
+        if "nvl" in gpu_name_lower:
+            return "h100-nvl"
+        if "pcie" in gpu_name_lower or "pci-e" in gpu_name_lower:
+            return "h100-pcie"
+        return "h100-sxm"
+
+    gpu_name = gpu_name_lower.split(" ")[-1]
     if gpu_name == "p100-pcie-12gb":
         gpu_name = "p100"
     elif gpu_name == "p100-pcie-16gb":
@@ -89,7 +97,6 @@ def clean_gpu_name(gpu_name):
         gpu_name = "a100x40"
     elif gpu_name == "a100-sxm4-80gb":
         gpu_name = "a100x80"
-    # rename
     elif gpu_name == "nvl":
         gpu_name = "h100-nvl"
 
