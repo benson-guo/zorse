@@ -1,6 +1,6 @@
 # Zorse
 
-[![DOI](https://zenodo.org/badge/DOI/YOUR_DOI_HERE.svg)](https://doi.org/YOUR_DOI_HERE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19422416.svg)](https://doi.org/10.5281/zenodo.19422416)
 
 Zorse is a system for efficient LLM training on heterogeneous GPU clusters. It uses Pipeline-Efficient ZeRO DP, a novel integration of pipeline parallelism and data parallelism that is both communication- and memory-efficient.
 
