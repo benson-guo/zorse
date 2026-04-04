@@ -1,5 +1,9 @@
 # Zorse
 
+[![DOI](https://zenodo.org/badge/DOI/YOUR_DOI_HERE.svg)](https://doi.org/YOUR_DOI_HERE)
+
+Zorse is a system for efficient LLM training on heterogeneous GPU clusters. It uses Pipeline-Efficient ZeRO DP, a novel integration of pipeline parallelism and data parallelism that is both communication- and memory-efficient.
+
 ## Setup
 The setup script will create a conda environment and install Pytorch 2.5.1 as well as other libraries needed to run the code. Tested with CUDA 12.1, PyTorch 2.5.1.
 
@@ -48,3 +52,16 @@ Note: May need to set environment variables `GLOO_SOCKET_IFNAME`, `NCCL_SOCKET_I
 
 <h4>Distributed Training</h4>
 When running training on a cluster with multiple nodes, the memory profiling and training commands need to be run on all nodes in the cluster. You will need to add and configure the following flags to torchrun: --nnodes, --node_rank, --master_addr, and --master_port
+
+## Expected Results
+
+Each step of the pipeline produces the following output:
+
+- **Profiling (`profile_models.sh`):** Per-layer forward/backward pass timings for each distinct GPU type, saved to a JSON profile under `profiled_models/`.
+- **Cluster Info (`collect_cluster_info.py`):** A `cluster_info.json` file containing detected GPU types, memory capacities, and measured inter-GPU communication bandwidths.
+- **Planner (`zorse_planner.py`):** A `training_config.json` file specifying the optimal parallelism strategy — pipeline stage assignments, data parallelism groups, and micro-batch schedules.
+- **Training (`zorse.py`):** Per-iteration timing logs, memory usage statistics, and a final Training Summary with throughput (tokens/s), per-GPU memory utilization, time per step (ms), and Model FLOPs Utilization (MFU).
+
+## Chameleon Cloud Artifact
+
+A ready-to-run Trovi artifact is available for reproducing results on [Chameleon Cloud](https://www.chameleoncloud.org/). See [`chameleon.ipynb`](chameleon.ipynb) for the complete end-to-end walkthrough. The notebook was originally tested on 4x NVIDIA Tesla V100-PCIE-32GB.
